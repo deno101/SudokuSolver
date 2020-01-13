@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 dataSet = [
-    [0, 6, 4 ,0, 0, 0, 7, 5, 0],
+    [0, 6, 4, 0, 0, 0, 7, 5, 0],
     [9, 0, 0, 0, 4, 3, 6, 8, 1],
     [1, 0, 7, 9, 0, 0, 2, 0, 3],
 
@@ -17,13 +17,17 @@ dataSet = [
 
 class Solver:
 
-    missing = []
-    rowData = []
-    columnData = []
-
     def __init__(self):
-        self.main()
-        print(self.missing)
+
+        self.missing = []
+        self.rowData = []
+        self.columnData = []
+        self.currentCell = None
+        self.ischange = False
+        self.cleanData()
+
+        self.recursion()
+        self.debug()
 
     # args = 2d array representing 3x3 cell
     # return all missing values for a 3x3 cell
@@ -39,7 +43,10 @@ class Solver:
         # largerSet.difference(smallerSet)
         return complete.difference(set1)
 
-    def main(self):
+    # try to solve the puzzle using recursion
+    # for very simple soduku puzzle
+    def recursion(self):
+        self.ischange = False
 
         countx = 0
         county = 0
@@ -55,13 +62,32 @@ class Solver:
                 array.append(temp)
                 county += 1
 
-
             if county > 8:
                 county = 0
                 countx += 3
 
-            # misssind => array containing set of all missing nubers in a 3x3 cell
+            # missing => array containing set of all missing numbers in a 3x3 cell
             self.missing.append(self.getMissing(array))
+
+        posy = 0
+        self.currentMissing(0, 0)
+        for x in dataSet:
+            posx = 0
+            count = 1
+            for i in x:
+                self.currentMissing(posx, posy)
+                if i == 0:
+                    self.posibility(posx, posy)
+
+                posx += 1
+                count += 1
+
+            posy += 1
+            self.currentMissing(posx, posy)
+
+        if self.ischange:
+            self.main()
+
 
     '''
         function divides data into 1d lists containing all 9x9 rows and columns
@@ -78,12 +104,56 @@ class Solver:
                 temp.append(dataSet[x][y])
             self.columnData.append(temp)
 
-    def posibility(self):
-        pass
+    def posibility(self, x, y):
+        temp = self.currentCell[0].copy()
 
-    def populate(self, target, value):
-        pass
+        for i in self.currentCell[0]:
+            if i in self.rowData[y]:
+                temp.remove(i)
+            elif i in self.columnData[x]:
+                temp.remove(i)
 
+        if len(temp) == 1:
+            self.populate(x, y, list(temp)[0])
+
+    def populate(self, x, y, value):
+        dataSet[y][x] = value
+        self.ischange = True
+        self.missing[self.currentCell[1]].remove(value)
+
+
+    # Stupid logic
+    def currentMissing(self, x, y):
+        if (x >= 0 and x <= 2) and (y >= 0 and y <= 2):
+            self.currentCell = (self.missing[0], 0)
+
+        elif (x >= 0 and x <= 2) and (y >= 3 and y <= 5):
+            self.currentCell = (self.missing[1], 1)
+
+        elif (x >= 0 and x <= 2) and (y >= 6 and y <= 8):
+            self.currentCell = (self.missing[2], 2)
+
+        elif (x >= 3 and x <= 5) and (y >= 0 and y <= 2):
+            self.currentCell = (self.missing[3], 3)
+
+        elif (x >= 3 and x <= 5) and (y >= 3 and y <= 5):
+            self.currentCell = (self.missing[4], 4)
+
+        elif (x >= 3 and x <= 5) and (y >= 6 and y <= 8):
+            self.currentCell = (self.missing[5], 5)
+
+        elif (x >= 6 and x <= 8) and (y >= 0 and y <= 2):
+            self.currentCell = (self.missing[6], 6)
+
+        elif (x >= 6 and x <= 8) and (y >= 3 and y <= 5):
+            self.currentCell = (self.missing[7], 7)
+
+        elif (x >= 6 and x <= 8) and (y >= 6 and y <= 8):
+            self.currentCell = (self.missing[8], 8)
+
+    def debug(self):
+        for i in dataSet:
+            print(i)
 
 if __name__=="__main__":
     Solver()
