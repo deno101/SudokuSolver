@@ -14,6 +14,20 @@ dataSet = [
     [0, 4, 5, 0, 0, 0, 9, 3, 0]
 ]
 
+dataSet2 = [
+    [1, 9, 0, 0, 7, 6, 0, 0, 5],
+    [4, 0, 0, 0, 1, 9, 0, 3, 7],
+    [5, 0, 3, 0, 0, 2, 0, 0, 0],
+
+    [0, 2, 1, 0, 0, 0, 5, 0, 6],
+    [8, 0, 4, 0, 0, 0, 7, 0, 2],
+    [7, 0, 6, 0, 0, 0, 3, 9, 0],
+
+    [0, 0, 0, 9, 0, 0, 8, 0, 4],
+    [2, 8, 0, 4, 6, 0, 0, 0, 3],
+    [3, 0, 0, 2, 8, 0, 0, 7, 9]
+]
+
 
 class Solver:
 
@@ -22,8 +36,10 @@ class Solver:
         self.missing = []
         self.rowData = []
         self.columnData = []
+
         self.currentCell = None
         self.ischange = False
+        self.helperMissing()
         self.cleanData()
 
         self.recursion()
@@ -43,11 +59,7 @@ class Solver:
         # largerSet.difference(smallerSet)
         return complete.difference(set1)
 
-    # try to solve the puzzle using recursion
-    # for very simple soduku puzzle
-    def recursion(self):
-        self.ischange = False
-
+    def helperMissing(self):
         countx = 0
         county = 0
 
@@ -69,6 +81,11 @@ class Solver:
             # missing => array containing set of all missing numbers in a 3x3 cell
             self.missing.append(self.getMissing(array))
 
+    # try to solve the puzzle using recursion
+    # for very simple soduku puzzle
+    def recursion(self):
+        self.ischange = False
+
         posy = 0
         self.currentMissing(0, 0)
         for x in dataSet:
@@ -86,7 +103,9 @@ class Solver:
             self.currentMissing(posx, posy)
 
         if self.ischange:
-            self.main()
+            self.columnData = []
+            self.cleanData()
+            self.recursion()
 
 
     '''
@@ -107,6 +126,10 @@ class Solver:
     def posibility(self, x, y):
         temp = self.currentCell[0].copy()
 
+        if (x == 4 and y == 6):
+            print(f'row... {self.rowData[y]}')
+            print(f'column... {self.columnData[x]}')
+            print(f'missing.. {self.currentCell}')
         for i in self.currentCell[0]:
             if i in self.rowData[y]:
                 temp.remove(i)
@@ -121,39 +144,39 @@ class Solver:
         self.ischange = True
         self.missing[self.currentCell[1]].remove(value)
 
-
     # Stupid logic
     def currentMissing(self, x, y):
-        if (x >= 0 and x <= 2) and (y >= 0 and y <= 2):
+        if x <= 2 and y <= 2:
             self.currentCell = (self.missing[0], 0)
 
-        elif (x >= 0 and x <= 2) and (y >= 3 and y <= 5):
+        elif x <= 2 and y <= 5:
             self.currentCell = (self.missing[1], 1)
 
-        elif (x >= 0 and x <= 2) and (y >= 6 and y <= 8):
+        elif x <= 2 and y <= 8:
             self.currentCell = (self.missing[2], 2)
 
-        elif (x >= 3 and x <= 5) and (y >= 0 and y <= 2):
+        elif x <= 5 and y <= 2:
             self.currentCell = (self.missing[3], 3)
 
-        elif (x >= 3 and x <= 5) and (y >= 3 and y <= 5):
+        elif x <= 5 and y <= 5:
             self.currentCell = (self.missing[4], 4)
 
-        elif (x >= 3 and x <= 5) and (y >= 6 and y <= 8):
+        elif x <= 5 and y <= 8:
             self.currentCell = (self.missing[5], 5)
 
-        elif (x >= 6 and x <= 8) and (y >= 0 and y <= 2):
+        elif x <= 8 and y <= 2:
             self.currentCell = (self.missing[6], 6)
 
-        elif (x >= 6 and x <= 8) and (y >= 3 and y <= 5):
+        elif x <= 8and y <= 5:
             self.currentCell = (self.missing[7], 7)
 
-        elif (x >= 6 and x <= 8) and (y >= 6 and y <= 8):
+        elif x <= 8 and y <= 8:
             self.currentCell = (self.missing[8], 8)
 
     def debug(self):
         for i in dataSet:
             print(i)
+
 
 if __name__=="__main__":
     Solver()
