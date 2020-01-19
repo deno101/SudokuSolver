@@ -1,11 +1,16 @@
 import tkinter as tk
-import random
+from pynput import keyboard
+
+# Global var  kepping track of the currently clicked label
+currentPressed = None
 
 
 class Board(tk.Frame):
-    grids = {}
 
     def __init__(self, parent):
+        self.grids = dict()
+        self.originCol = None
+
         tk.Frame.__init__(self, parent)
         self.createBoard()
 
@@ -25,7 +30,9 @@ class Board(tk.Frame):
             for x in range(9):
                 xp, yp = (0, 1), (0, 1)
 
-                self.grids[str(x)+str(y)] = tk.Label(self, text="", font=('Heveltica', 18,), width=2)
+                l = tk.Label(self, text="", font=('Heveltica', 18,), width=2)
+
+
 
                 # give extra padding after every 3 rows or colums
                 if x in xpadding:
@@ -41,12 +48,24 @@ class Board(tk.Frame):
                 if y == 0:
                     yp = (1, 1)
 
-                self.grids[(str(x) + str(y))].grid(column=y, row=x, padx=yp, pady=xp)
+                l.grid(column=y, row=x, padx=yp, pady=xp)
+                l.__name__ = (str(x) + str(y))
+                l.bind("<Button-1>", lambda e, widget=l: self.onclick(e, widget))
+
+                self.grids[l.__name__] = l
+
                 x += 1
 
             y += 1
+        self.originCol = l.cget("background")
         self.pack(pady=(8, 0))
 
+    def onclick(self, event, widget):
+        global currentPressed
+        if not currentPressed == None:
+            currentPressed.config(bg=self.originCol)
+        widget.config(bg="yellow")
+        currentPressed = widget
 
 class Command(tk.Frame):
     editBtn = None
@@ -69,7 +88,31 @@ class Command(tk.Frame):
         self.pack()
 
 
-class mainUI(Board, Command):
+class Listener:
+    keyPressed = None
+
+    def __init__(self):
+        self.keyboardLs()
+
+    def onPress(self, key):
+        if key.char in [1, 2, 3, 4, 5, 6, 7, 8, 9]:
+            self.keyPressed = key.char
+        else:
+            return "Invalid Key"
+
+    def onRelease(self, key):
+        pass
+
+    def keyboardLs(self):
+        listener = keyboard.Listener(
+            on_press=self.onPress,
+            on_release=self.onRelease,
+        )
+
+        listener.start()
+
+
+class mainUI(Board, Command, Listener):
     grids = {}
     root = tk.Tk()
 
