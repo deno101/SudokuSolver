@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import UI
 
 dataSet = [
     [6, 0, 0, 3, 0, 0, 0, 0, 0],
@@ -31,11 +32,13 @@ dataSet2 = [
 
 class Solver:
 
-    def __init__(self):
+    def __init__(self, rawPuzzle, mainUI):
 
+        self.mainUI = mainUI
         self.missing = []
         self.rowData = []
         self.columnData = []
+        self.rawPuzzle = rawPuzzle
 
         self.currentCell = None
         self.ischange = False
@@ -43,7 +46,6 @@ class Solver:
         self.cleanData()
 
         self.recursion()
-        self.debug()
 
     # args = 2d array representing 3x3 cell
     # return all missing values for a 3x3 cell
@@ -69,7 +71,7 @@ class Solver:
             for k in range(3):
                 temp = []
                 for j in range(countx, countx + 3, 1):
-                    temp.append(dataSet[county][j])
+                    temp.append(self.rawPuzzle[county][j])
 
                 array.append(temp)
                 county += 1
@@ -88,7 +90,7 @@ class Solver:
 
         posy = 0
         self.currentMissing(0, 0)
-        for x in dataSet:
+        for x in self.rawPuzzle:
             posx = 0
             count = 1
             for i in x:
@@ -107,7 +109,6 @@ class Solver:
             self.cleanData()
             self.recursion()
 
-
     '''
         function divides data into 1d lists containing all 9x9 rows and columns
         making it easy for searching
@@ -115,21 +116,17 @@ class Solver:
         populates global vars rowData, columnData
     '''
     def cleanData(self):
-        self.rowData = dataSet
+        self.rowData = self.rawPuzzle
 
         for y in range(0, 9, 1):
             temp = []
             for x in range(0, 9, 1):
-                temp.append(dataSet[x][y])
+                temp.append(self.rawPuzzle[x][y])
             self.columnData.append(temp)
 
     def posibility(self, x, y):
         temp = self.currentCell[0].copy()
 
-        if (x == 4 and y == 6):
-            print(f'row... {self.rowData[y]}')
-            print(f'column... {self.columnData[x]}')
-            print(f'missing.. {self.currentCell}')
         for i in self.currentCell[0]:
             if i in self.rowData[y]:
                 temp.remove(i)
@@ -140,7 +137,8 @@ class Solver:
             self.populate(x, y, list(temp)[0])
 
     def populate(self, x, y, value):
-        dataSet[y][x] = value
+        self.rawPuzzle[y][x] = value
+        self.mainUI.showChanges((str(y)+str(x)), value)
         self.ischange = True
         self.missing[self.currentCell[1]].remove(value)
 
@@ -173,10 +171,3 @@ class Solver:
         elif x <= 8 and y <= 8:
             self.currentCell = (self.missing[8], 8)
 
-    def debug(self):
-        for i in dataSet:
-            print(i)
-
-
-if __name__=="__main__":
-    Solver()
