@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import UI
 
 dataSet = [
     [6, 0, 0, 3, 0, 0, 0, 0, 0],
@@ -39,6 +38,7 @@ class Solver:
         self.rowData = []
         self.columnData = []
         self.rawPuzzle = rawPuzzle
+        self.cellData  = []
 
         self.currentCell = None
         self.ischange = False
@@ -68,11 +68,12 @@ class Solver:
         # loop through all 9 cells
         for i in range(9):
             array = []
+            cell = []
             for k in range(3):
                 temp = []
                 for j in range(countx, countx + 3, 1):
                     temp.append(self.rawPuzzle[county][j])
-
+                    cell.append(self.rawPuzzle[county][j])
                 array.append(temp)
                 county += 1
 
@@ -82,32 +83,40 @@ class Solver:
 
             # missing => array containing set of all missing numbers in a 3x3 cell
             self.missing.append(self.getMissing(array))
+            self.cellData.append(cell)
 
     # try to solve the puzzle using recursion
     # for very simple soduku puzzle
     def recursion(self):
         self.ischange = False
 
-        posy = 0
-        self.currentMissing(0, 0)
-        for x in self.rawPuzzle:
-            posx = 0
-            count = 1
-            for i in x:
+        # check if the puzzle is valid before starting solve
+        print
+        if (self.isValid(self.cellData)) and (self.isValid(self.rowData)) and (self.isValid(self.columnData)):
+            posy = 0
+            self.currentMissing(0, 0)
+            for x in self.rawPuzzle:
+                posx = 0
+                count = 1
+                for i in x:
+                    self.currentMissing(posx, posy)
+                    if i == 0:
+                        self.posibility(posx, posy)
+
+                    posx += 1
+                    count += 1
+
+                posy += 1
                 self.currentMissing(posx, posy)
-                if i == 0:
-                    self.posibility(posx, posy)
 
-                posx += 1
-                count += 1
-
-            posy += 1
-            self.currentMissing(posx, posy)
-
-        if self.ischange:
-            self.columnData = []
-            self.cleanData()
-            self.recursion()
+            if self.ischange:
+                self.columnData = []
+                self.cleanData()
+                self.recursion()
+            else:
+                self.mainUI.changeText("Complete")
+        else:
+            self.mainUI.changeText("Invalid puzzle")
 
     '''
         function divides data into 1d lists containing all 9x9 rows and columns
@@ -123,6 +132,14 @@ class Solver:
             for x in range(0, 9, 1):
                 temp.append(self.rawPuzzle[x][y])
             self.columnData.append(temp)
+
+    def isValid(self, ls):
+        for y in ls:
+            for x in y:
+                if y.count(x) > 1 and not x == 0:
+                    return False
+
+        return True
 
     def posibility(self, x, y):
         temp = self.currentCell[0].copy()
